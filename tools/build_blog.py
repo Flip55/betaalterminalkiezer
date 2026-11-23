@@ -18,8 +18,9 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 OUT = ROOT / "blog"
 DATE = CHECKED
 SRC = (f'<p class="source">Prijzen van de sites van de aanbieders, nagekeken op {CHECKED}. '
-       'Ze kunnen intussen gewijzigd zijn. De bronnen staan bij elke aanbieder op de pagina '
-       '<a href="../betaalterminals.html">Betaalterminals</a>.</p>')
+       'Ze kunnen intussen gewijzigd zijn. De bronnen staan bij elke aanbieder op de overzichtspagina\'s '
+       'voor <a href="../betaalterminals.html">betaalterminals</a>, <a href="../smartphone-en-qr.html">smartphone en QR</a> '
+       'en <a href="../online-betalen.html">online betalen</a>.</p>')
 
 ARTICLES = [
     {
@@ -91,47 +92,46 @@ ARTICLES = [
 """,
     },
     {
-        "slug": "vaste-of-mobiele-betaalterminal",
-        "title": "Vaste of mobiele betaalterminal: welke past bij jouw zaak?",
-        "summary": "Aan de toonbank, aan tafel of op de markt: de plek waar je klant betaalt, bepaalt het toestel.",
-        "body": """
-<p>Een betaalterminal bestaat in twee grote soorten. Het verschil zit in hoe het toestel verbinding maakt en waar je het gebruikt.</p>
+        "slug": "terminal-smartphone-of-qr-code",
+        "title": "Terminal, smartphone of QR-code: welke betaaloplossing past bij jouw zaak?",
+        "summary": "Je hebt niet altijd een toestel nodig om elektronisch betaald te worden. De vier opties naast elkaar.",
+        "body": f"""
+<p>Een betaalterminal is de bekendste manier om elektronisch betaald te worden, maar niet de enige. Welke oplossing past, hangt af van waar je klant betaalt en hoe vaak.</p>
 <h2>Vaste terminal</h2>
-<p>Een vaste terminal staat aan de toonbank, hangt aan de stroom en werkt via je internetkabel. Hij is gemaakt om de hele dag door te werken en kan meestal met je kassa praten. Het is de logische keuze voor een winkel met één afrekenpunt.</p>
-<h2>Mobiele terminal</h2>
-<p>Een mobiele terminal heeft een batterij en werkt via wifi of een simkaart. Je neemt hem mee naar de tafel, het terras, de markt of de klant thuis. Let op drie dingen:</p>
-<ul>
-<li><strong>Verbinding.</strong> Werkt het toestel met een eigen simkaart, of heeft het je smartphone nodig?</li>
-<li><strong>Batterij.</strong> Haalt het toestel een volledige werkdag?</li>
-<li><strong>Bonnetje.</strong> Heeft het een printer, of stuur je het bewijs digitaal?</li>
-</ul>
-<h2>Kaartlezer met je smartphone</h2>
-<p>De goedkoopste toestellen zijn kaartlezers die via een app op je telefoon werken. Ze kosten weinig, maar je hebt altijd je telefoon erbij nodig. Voor wie af en toe een betaling ontvangt, is dat genoeg.</p>
-<h2>Je telefoon als terminal</h2>
-<p>Sommige aanbieders laten je contactloze betalingen aannemen op je eigen smartphone, zonder extra toestel. Handig als reserve of voor wie zelden een kaartbetaling krijgt.</p>
-<h2>Twijfel je?</h2>
-<p>Veel mobiele terminals werken ook prima aan de toonbank. In de rekentool kies je "maakt mij niet uit" en zie je alle formules naast elkaar.</p>
+<p>Staat aan de toonbank, hangt aan de stroom en werkt via je internetkabel. Gemaakt om de hele dag te draaien en kan meestal met je kassa samenwerken. De logische keuze voor een winkel met één afrekenpunt.</p>
+<h2>Mobiele terminal of kaartlezer</h2>
+<p>Heeft een batterij en werkt via wifi of een simkaart. Je neemt hem mee naar de tafel, het terras of de markt. De goedkoopste kaartlezers werken via een app op je telefoon en kosten enkele tientallen euro's.</p>
+<h2>Je smartphone als terminal</h2>
+<p>Met een app neem je contactloze betalingen aan op je eigen telefoon, zonder extra toestel. Bij Worldline heet dat Tap on Mobile: geen maandelijkse kosten en vanaf 0,13 euro per transactie. Bij myPOS zit Tap to Pay in elke formule. Handig voor wie weinig betalingen krijgt, op verplaatsing werkt of een reserve wil.</p>
+<h2>QR-code</h2>
+<p>Je klant scant een QR-code met zijn bankapp en bevestigt het bedrag. Met Bancontact Pro kost dat 0,06 euro per betaling en 18 euro per jaar, zonder btw. Je hebt geen toestel nodig. Het nadeel: je aanvaardt er geen betaalkaarten of kredietkaarten mee, en je klant heeft zijn telefoon en een app nodig.</p>
+<h2>Combineren mag</h2>
+<p>Veel zaken hangen een QR-sticker naast hun terminal. Wie met de app betaalt, kost je dan minder, en je hebt een reserve als de terminal uitvalt.</p>
+<p>In de rekentool kies je hoe je betalingen wil aannemen en zie je wat elke oplossing per maand kost.</p>
+{SRC}
 """,
     },
     {
-        "slug": "wanneer-loont-een-abonnement",
-        "title": "Wanneer loont een abonnement met lagere transactiekosten?",
-        "summary": "SumUp en myPOS verlagen hun percentage als je 19 euro per maand betaalt. Vanaf welke omzet win je daarmee?",
+        "slug": "online-betalingen-wat-kost-het",
+        "title": "Online betalingen in je webshop: wat kost het?",
+        "summary": "Online betaal je per bestelling een vast bedrag, een percentage of beide. Zo lees je de tarieven.",
         "body": f"""
-<p>SumUp en myPOS hebben elk een formule zonder vaste kosten en een abonnement dat het tarief per betaling verlaagt. De vraag is vanaf welke omzet het abonnement zichzelf terugbetaalt.</p>
-<h2>De som</h2>
-<p>Deel de prijs van het abonnement door het verschil tussen beide percentages.</p>
+<p>Een betaling in je webshop kost meer dan dezelfde betaling aan een terminal. Daar staat tegenover dat je geen toestel nodig hebt en meestal geen vaste kosten betaalt.</p>
+<h2>Hoe zijn de tarieven opgebouwd?</h2>
+<p>De meeste aanbieders rekenen per geslaagde betaling. Er zijn drie vormen:</p>
 <ul>
-<li><strong>SumUp.</strong> Zonder abonnement 1,69%, met Betalingen Plus (19 euro per maand) 0,99%. Het verschil is 0,70%. 19 gedeeld door 0,007 is ongeveer 2.700 euro kaartomzet per maand. SumUp zelf raadt het abonnement aan vanaf 2.900 euro.</li>
-<li><strong>myPOS.</strong> One 1,49%, Plus (19 euro per maand) 0,99%. Het verschil is 0,50%. 19 gedeeld door 0,005 is 3.800 euro per maand. myPOS zelf noemt 4.200 euro.</li>
+<li><strong>Een vast bedrag.</strong> Viva.com vraagt 0,37 euro per online Bancontact-betaling.</li>
+<li><strong>Een percentage.</strong> SumUp vraagt 2,50% per online betaling.</li>
+<li><strong>Een percentage plus een vast bedrag.</strong> myPOS vraagt in de formule zonder abonnement 1,99% + 0,20 euro. Voor kaarten van Visa en Mastercard rekent Viva.com 2,19% + 0,24 euro.</li>
 </ul>
-<h2>Waar je op moet letten</h2>
-<ul>
-<li>Het lagere tarief geldt voor kaarten van particulieren. Zakelijke kaarten en kaarten van buiten Europa blijven duurder.</li>
-<li>Heb je een seizoenszaak, reken dan per maand. Beide abonnementen zijn volgens de aanbieders opzegbaar.</li>
-<li>Bij myPOS bestaat ook de formule Pro van 39 euro per maand, met 0,12 euro per Bancontact-betaling. Die wordt interessant bij grotere bedragen.</li>
-</ul>
-<p>De rekentool kiest per aanbieder automatisch de formule die voor jouw cijfers het goedkoopst is.</p>
+<h2>Kleine bestellingen: let op het vaste bedrag</h2>
+<p>Bij een bestelling van 10 euro is 0,37 euro al 3,7% van het bedrag. Bij een bestelling van 100 euro is het 0,37%. Verkoop je vooral kleine bedragen, dan weegt het vaste deel zwaar door.</p>
+<h2>Bancontact of kaart?</h2>
+<p>In België betalen veel klanten online met Bancontact. Die betaling heeft bij sommige aanbieders een eigen, lager tarief dan een kredietkaart. Kijk dus naar beide tarieven en schat hoeveel van je klanten met elk betalen.</p>
+<h2>Alleen Bancontact aanbieden?</h2>
+<p>Met Bancontact Pro kost een online betaling volgens KBC 0,20 euro, plus 18 euro per jaar. Je aanvaardt dan geen kredietkaarten. Voor een webshop met alleen Belgische klanten kan dat volstaan.</p>
+<h2>Verkoop je ook in een zaak?</h2>
+<p>Dan kan één aanbieder voor beide handig zijn: één overzicht en één uitbetaling. Het is niet altijd het goedkoopst. De rekentool toont de twee lijsten naast elkaar.</p>
 {SRC}
 """,
     },
@@ -263,8 +263,8 @@ ARTICLES = [
 ]
 
 CTA = f"""<aside class="closing">
-  <h2>Wat kost een terminal voor jouw zaak?</h2>
-  <p>Zes korte vragen. Je ziet per aanbieder de geschatte maandkost, met de berekening erbij.</p>
+  <h2>Wat kost betaald worden voor jouw zaak?</h2>
+  <p>Enkele korte vragen. Je ziet per aanbieder de geschatte maandkost, met de berekening erbij.</p>
   <a class="btn primary" href="../index.html#quiz">{CTA_LABEL}</a>
 </aside>
 """
@@ -302,9 +302,9 @@ def build() -> None:
             f"<p>{esc_sum}</p><p class=\"meta\">{mins} minuten lezen</p></li>"
         )
     index = (
-        head("Blog | " + BRAND, "Praktische artikels over het kiezen en betalen van een betaalterminal in België.", "../", "blog", note)
-        + '<div class="page-head"><h1>Een betaalterminal kiezen, zonder jargon</h1>'
-        + '<p class="lead">Praktische uitleg over kosten, contracten en de koppeling met je kassa.</p></div>\n'
+        head("Blog | " + BRAND, "Praktische artikels over betaaloplossingen voor ondernemers in België: terminal, smartphone, QR-code en webshop.", "../", "blog", note)
+        + '<div class="page-head"><h1>Een betaaloplossing kiezen, zonder jargon</h1>'
+        + '<p class="lead">Praktische uitleg over terminals, betalen via smartphone, QR-codes, online betalingen en je kassa.</p></div>\n'
         + '<ul class="posts">\n'
         + "\n".join(items)
         + "\n</ul>\n"

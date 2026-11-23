@@ -1,4 +1,4 @@
-/* Betaalterminalkiezer: werking van de rekenquiz. Teksten en tarieven staan in quiz-config.js. */
+/* Betaaloplossingkiezer: werking van de rekenquiz. Teksten en tarieven staan in quiz-config.js. */
 (function () {
   "use strict";
 
@@ -13,7 +13,11 @@
   }
 
   /* Kost van één formule. Geeft de regels van de berekening terug als gegevens; de tekst maakt de weergave. */
-  function planCost(plan, input) {
+  function planCost(plan, base) {
+    var input = base;
+    if (plan.debitOnly) {
+      input = { turnover: base.turnover, ticket: base.ticket, n: base.n, nDebit: base.n, nCredit: 0, debitTurnover: base.turnover, creditTurnover: 0 };
+    }
     var lines = [];
     var total = 0;
 
@@ -38,19 +42,24 @@
           lines.push({ kind: "debitFixed", n: input.nDebit, rate: tier.amount, amount: round2(input.nDebit * tier.amount) });
           total += input.nDebit * tier.amount;
         }
-      } else if (d.fixed != null) {
-        lines.push({ kind: "debitFixed", n: input.nDebit, rate: d.fixed, amount: round2(input.nDebit * d.fixed) });
-        total += input.nDebit * d.fixed;
       } else {
-        lines.push({ kind: "debitPct", rate: d.pct, base: input.debitTurnover, amount: round2(input.debitTurnover * d.pct) });
-        total += input.debitTurnover * d.pct;
+        if (d.pct) {
+          lines.push({ kind: "debitPct", rate: d.pct, base: input.debitTurnover, amount: round2(input.debitTurnover * d.pct) });
+          total += input.debitTurnover * d.pct;
+        }
+        if (d.fixed) {
+          lines.push({ kind: "debitFixed", n: input.nDebit, rate: d.fixed, amount: round2(input.nDebit * d.fixed) });
+          total += input.nDebit * d.fixed;
+        }
       }
     }
 
     var c = plan.credit;
     if (input.nCredit > 0) {
-      lines.push({ kind: "creditPct", rate: c.pct, base: input.creditTurnover, amount: round2(input.creditTurnover * c.pct) });
-      total += input.creditTurnover * c.pct;
+      if (c.pct) {
+        lines.push({ kind: "creditPct", rate: c.pct, base: input.creditTurnover, amount: round2(input.creditTurnover * c.pct) });
+        total += input.creditTurnover * c.pct;
+      }
       if (c.fixed) {
         lines.push({ kind: "creditFixed", n: input.nCredit, rate: c.fixed, amount: round2(input.nCredit * c.fixed) });
         total += input.nCredit * c.fixed;
@@ -61,16 +70,23 @@
     return { plan: plan, lines: lines, monthly: round2(total), oneOff: oneOff };
   }
 
-  function fitsType(plan, type) {
-    if (type !== "vast" && type !== "mobiel") { return true; }
-    if (!plan.types) { return true; }
-    return plan.types.indexOf(type) !== -1;
+  function fitsType(plan, allowed) {
+    if (!allowed || !plan.types) { return true; }
+    return plan.types.some(function (t) { return allowed.indexOf(t) !== -1; });
   }
 
-  function compute(answers, cfg) {
-    var turnover = optionOf(cfg, "omzet", answers.omzet).value;
-    var ticket = optionOf(cfg, "ticket", answers.ticket).value;
-    var share = cfg.assumptions.debitShare;
+  /* De vragen die bij het gekozen kanaal horen. */
+  function stepsFor(answers, cfg) {
+    var k = optionOf(cfg, "kanaal", answers.kanaal);
+    var chans = k ? k.channels : [];
+    return cfg.questions.filter(function (q) { return !q.when || chans.indexOf(q.when) !== -1; });
+  }
+
+  function computeChannel(id, answers, cfg) {
+    var ch = cfg.channels[id];
+    var turnover = optionOf(cfg, ch.turnover, answers[ch.turnover]).value;
+    var ticket = optionOf(cfg, ch.ticket, answers[ch.ticket]).value;
+    var share = cfg.assumptions.debitShare[id];
     var n = Math.max(1, Math.round(turnover / ticket));
     var nDebit = Math.round(n * share);
     var input = {
@@ -78,14 +94,17 @@
       nDebit: nDebit, nCredit: n - nDebit,
       debitTurnover: round2(turnover * share), creditTurnover: round2(turnover * (1 - share))
     };
-    var type = answers.type;
+    var typeOpt = id === "winkel" ? optionOf(cfg, "type", answers.type) : null;
+    var allowed = typeOpt ? typeOpt.types : null;
 
     var rows = [], onRequest = [];
     cfg.providers.forEach(function (p) {
-      if (p.priceOnRequest) { onRequest.push(p); return; }
-      var costs = p.plans.map(function (pl) {
+      if (p.onRequest && p.onRequest[id]) { onRequest.push({ provider: p, note: p.onRequest[id] }); }
+      var plans = (p.plans || []).filter(function (pl) { return (pl.channel || "winkel") === id; });
+      if (!plans.length) { return; }
+      var costs = plans.map(function (pl) {
         var c = planCost(pl, input);
-        c.fits = fitsType(pl, type);
+        c.fits = fitsType(pl, allowed);
         return c;
       });
       var pool = costs.filter(function (c) { return c.fits; });
@@ -109,17 +128,20 @@
       else if (!top3.length || top3[0] === mine) { current = { status: "best", row: mine }; }
       else { current = { status: "cheaper", row: mine, best: top3[0], diff: round2(mine.monthly - top3[0].monthly) }; }
     }
+    return { id: id, input: input, type: answers.type, rows: rows, top3: top3, onRequest: onRequest, current: current };
+  }
 
+  function compute(answers, cfg) {
+    var chans = optionOf(cfg, "kanaal", answers.kanaal).channels;
     var notes = [];
-    cfg.questions.forEach(function (q) {
+    stepsFor(answers, cfg).forEach(function (q) {
       var o = optionOf(cfg, q.id, answers[q.id]);
       if (o && o.note) { notes.push(o.note); }
     });
-
-    return { input: input, type: type, rows: rows, top3: top3, onRequest: onRequest, current: current, notes: notes };
+    return { channels: chans.map(function (id) { return computeChannel(id, answers, cfg); }), notes: notes };
   }
 
-  if (typeof module !== "undefined") { module.exports = { compute: compute, planCost: planCost }; }
+  if (typeof module !== "undefined") { module.exports = { compute: compute, planCost: planCost, stepsFor: stepsFor }; }
   if (typeof document === "undefined") { return; }
 
   /* ---------- Opslag ---------- */
@@ -130,6 +152,8 @@
 
   var steps = cfg.questions;
   var state = { i: -1, answers: {} };
+  /* Zolang de eerste vraag niet beantwoord is, tellen we de vragen voor een zaak zonder webshop. */
+  function syncSteps() { steps = stepsFor(state.answers.kanaal ? state.answers : { kanaal: "winkel" }, cfg); }
 
   function load() {
     try {
@@ -171,7 +195,8 @@
   var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function go(i) {
-    state.i = i;
+    syncSteps();
+    state.i = Math.min(i, steps.length);
     save();
     render();
     root.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
@@ -188,6 +213,7 @@
     var b = el("button", "btn primary big", hasProgress ? cfg.start.resume : cfg.start.button);
     b.type = "button";
     b.onclick = function () {
+      syncSteps();
       var next = 0;
       while (next < steps.length && state.answers[steps[next].id] != null) { next++; }
       go(hasProgress ? Math.min(next, steps.length) : 0);
@@ -251,31 +277,32 @@
     return box;
   }
 
-  function lineText(l) {
-    var L = cfg.labels;
+  function lineText(l, ch) {
+    var L = cfg.labels, D = cfg.channels[ch].debit, C = cfg.channels[ch].credit;
     switch (l.kind) {
       case "fixed": return fill(L.calcFixed, { label: l.label });
-      case "debitFixed": return fill(L.calcDebitFixed, { n: num(l.n, 0), rate: rate(l.rate) });
-      case "debitPct": return fill(L.calcDebitPct, { rate: pct(l.rate), amount: eur0(l.base) });
+      case "debitFixed": return fill(L.calcDebitFixed, { n: num(l.n, 0), rate: rate(l.rate), debit: D });
+      case "debitPct": return fill(L.calcDebitPct, { rate: pct(l.rate), amount: eur0(l.base), debit: D });
       case "debitFree": return fill(L.calcDebitFree, { n: num(l.n, 0) });
       case "debitSmallExtra": return fill(L.calcDebitSmallExtra, { n: num(l.n, 0), free: num(l.free, 0), rate: rate(l.rate) });
-      case "creditPct": return fill(L.calcCreditPct, { rate: pct(l.rate), amount: eur0(l.base) });
-      case "creditFixed": return fill(L.calcCreditFixed, { n: num(l.n, 0), rate: rate(l.rate) });
+      case "creditPct": return fill(L.calcCreditPct, { rate: pct(l.rate), amount: eur0(l.base), credit: C });
+      case "creditFixed": return fill(L.calcCreditFixed, { n: num(l.n, 0), rate: rate(l.rate), credit: C });
     }
     return "";
   }
 
   function oneOffText(r) {
     if (r.oneOff == null) { return cfg.labels.oneOffUnknown; }
+    if (r.oneOff === 0) { return cfg.labels.oneOffNone; }
     return fill(cfg.labels.oneOff, { amount: eur(r.oneOff) });
   }
 
-  function calcBox(r) {
+  function calcBox(r, ch) {
     var box = el("div", "calcbox");
     var table = el("table");
     r.lines.forEach(function (l) {
       var tr = el("tr");
-      tr.appendChild(el("td", null, lineText(l)));
+      tr.appendChild(el("td", null, lineText(l, ch)));
       tr.appendChild(el("td", null, eur(l.amount)));
       table.appendChild(tr);
     });
@@ -286,6 +313,9 @@
     box.appendChild(table);
 
     var ul = el("ul");
+    if (r.plan.oneOff && !r.plan.oneOff.length && (r.plan.channel || "winkel") === "winkel") {
+      ul.appendChild(el("li", null, cfg.labels.oneOffNone + "."));
+    }
     if (r.plan.oneOff) {
       r.plan.oneOff.forEach(function (o) {
         ul.appendChild(el("li", null, fill(cfg.labels.calcOneOff, { label: o.label }) + ": " + eur(o.amount)));
@@ -311,41 +341,30 @@
     return src;
   }
 
-  function renderResult() {
-    var r = compute(state.answers, cfg);
-    var L = cfg.labels;
-    var box = el("div", "quiz-result");
-
-    var intro = el("div", "result-intro");
-    intro.appendChild(el("h2", null, L.resultTitle));
-    intro.appendChild(el("p", null, fill(L.resultIntro, { n: num(r.input.n, 0), ticket: eur0(r.input.ticket), turnover: eur0(r.input.turnover) })));
-    var chips = el("ul", "inputs");
-    steps.forEach(function (s) { chips.appendChild(el("li", null, optionOf(cfg, s.id, state.answers[s.id]).label)); });
-    intro.appendChild(chips);
-    box.appendChild(intro);
-
+  function renderChannel(c, box, multi) {
+    var L = cfg.labels, ch = cfg.channels[c.id];
     var top = el("section", "result-block");
-    top.appendChild(el("h3", null, L.top3Title));
+    if (multi) { top.appendChild(el("h3", "chan", ch.title)); }
+    top.appendChild(el("p", "chan-intro", fill(ch.intro, { n: num(c.input.n, 0), ticket: eur0(c.input.ticket), turnover: eur0(c.input.turnover) })));
+    top.appendChild(el(multi ? "h4" : "h3", "sub", L.top3Title));
     var grid = el("div", "top3");
-    r.top3.forEach(function (row, i) {
-      var c = el("div", "pick" + (i === 0 ? " first" : ""));
-      c.appendChild(el("span", "rank", fill(L.rank, { n: i + 1 })));
-      c.appendChild(el("h4", null, row.provider.name));
-      c.appendChild(el("p", "plan", row.plan.label));
+    c.top3.forEach(function (row, i) {
+      var k = el("div", "pick" + (i === 0 ? " first" : ""));
+      k.appendChild(el("span", "rank", fill(L.rank, { n: i + 1 })));
+      k.appendChild(el("h4", null, row.provider.name));
+      k.appendChild(el("p", "plan", row.plan.label));
       var price = el("div", "price", eur(row.monthly) + " ");
       price.appendChild(el("small", null, L.perMonth));
-      c.appendChild(price);
-      c.appendChild(el("p", "once", fill(L.shareOfTurnover, { pct: pct(Math.round(row.share * 10000) / 10000) })));
-      c.appendChild(el("p", "once", oneOffText(row)));
-      grid.appendChild(c);
+      k.appendChild(price);
+      k.appendChild(el("p", "once", fill(L.shareOfTurnover, { pct: pct(Math.round(row.share * 10000) / 10000) })));
+      if (c.id === "winkel") { k.appendChild(el("p", "once", oneOffText(row))); }
+      grid.appendChild(k);
     });
     top.appendChild(grid);
-    box.appendChild(top);
 
-    var all = el("section", "result-block");
-    all.appendChild(el("h3", null, L.allTitle));
+    top.appendChild(el(multi ? "h4" : "h3", "sub", L.allTitle));
     var rows = el("div", "rows");
-    r.rows.forEach(function (row, i) {
+    c.rows.forEach(function (row, i) {
       var d = el("details", "row" + (row.isCurrent ? " current" : ""));
       var s = el("summary");
       s.appendChild(el("span", "pos", String(i + 1)));
@@ -353,35 +372,70 @@
       who.appendChild(el("b", null, row.provider.name));
       who.appendChild(el("span", null, row.plan.label));
       if (row.isCurrent) { who.appendChild(el("span", "flag you", L.current)); }
-      if (!row.fits) { who.appendChild(el("span", "flag", fill(L.notFit, { type: cfg.typeLabels[r.type] }))); }
+      if (!row.fits) { who.appendChild(el("span", "flag", fill(L.notFit, { type: cfg.typeLabels[c.type] }))); }
       s.appendChild(who);
       var amt = el("span", "amt", eur(row.monthly));
       amt.appendChild(el("small", null, L.perMonth));
       s.appendChild(amt);
       s.appendChild(el("span", "more", L.showCalc));
       d.appendChild(s);
-      d.appendChild(calcBox(row));
+      d.appendChild(calcBox(row, c.id));
       if (i === 0) { d.open = true; }
       rows.appendChild(d);
     });
-    all.appendChild(rows);
-    all.appendChild(el("p", "checked", fill(L.checked, { date: cfg.checkedOn })));
-    box.appendChild(all);
+    top.appendChild(rows);
+
+    if (c.onRequest.length) {
+      top.appendChild(el(multi ? "h4" : "h3", "sub", L.onRequestTitle));
+      top.appendChild(el("p", null, L.onRequestIntro));
+      var ul = el("ul", "onrequest");
+      c.onRequest.forEach(function (o) {
+        var li = el("li");
+        li.appendChild(el("b", null, o.provider.name));
+        li.appendChild(el("span", null, o.note));
+        li.appendChild(sourceLine(o.provider));
+        ul.appendChild(li);
+      });
+      top.appendChild(ul);
+    }
+    box.appendChild(top);
+  }
+
+  function renderResult() {
+    var r = compute(state.answers, cfg);
+    var L = cfg.labels;
+    var box = el("div", "quiz-result");
+    var multi = r.channels.length > 1;
+
+    var intro = el("div", "result-intro");
+    intro.appendChild(el("h2", null, L.resultTitle));
+    var chips = el("ul", "inputs");
+    steps.forEach(function (s) { chips.appendChild(el("li", null, optionOf(cfg, s.id, state.answers[s.id]).label)); });
+    intro.appendChild(chips);
+    box.appendChild(intro);
+
+    r.channels.forEach(function (c) { renderChannel(c, box, multi); });
+    box.appendChild(el("p", "checked", fill(L.checked, { date: cfg.checkedOn })));
 
     var notes = el("div", "result-notes");
-    if (r.current) {
+    var curTexts = [], unknown = 0;
+    r.channels.forEach(function (c) {
+      if (!c.current) { return; }
+      var title = cfg.channels[c.id].title;
+      if (c.current.status === "best") {
+        curTexts.push(fill(L.currentBest, { channel: title, current: c.current.row.provider.name }));
+      } else if (c.current.status === "cheaper") {
+        curTexts.push(fill(L.currentCheaper, {
+          channel: title, current: c.current.row.provider.name, amount: eur(c.current.row.monthly),
+          best: c.current.best.provider.name, bestAmount: eur(c.current.best.monthly), diff: eur(c.current.diff)
+        }));
+      } else { unknown++; }
+    });
+    if (!curTexts.length && unknown) { curTexts.push(L.currentUnknown); }
+    if (curTexts.length) {
       var cur = el("section", "note note-info");
       cur.appendChild(el("h3", null, L.currentTitle));
-      var text = L.currentUnknown;
-      if (r.current.status === "best") {
-        text = fill(L.currentBest, { current: r.current.row.provider.name });
-      } else if (r.current.status === "cheaper") {
-        text = fill(L.currentCheaper, {
-          current: r.current.row.provider.name, amount: eur(r.current.row.monthly),
-          best: r.current.best.provider.name, bestAmount: eur(r.current.best.monthly), diff: eur(r.current.diff)
-        });
-      }
-      cur.appendChild(el("p", null, text));
+      curTexts.forEach(function (t) { cur.appendChild(el("p", null, t)); });
       notes.appendChild(cur);
     }
     if (r.notes.length) {
@@ -392,35 +446,27 @@
     }
     if (notes.children.length) { box.appendChild(notes); }
 
-    if (r.onRequest.length) {
-      var req = el("section", "result-block");
-      req.appendChild(el("h3", null, L.onRequestTitle));
-      req.appendChild(el("p", null, L.onRequestIntro));
-      var ul = el("ul", "onrequest");
-      r.onRequest.forEach(function (p) {
-        var li = el("li");
-        li.appendChild(el("b", null, p.name));
-        li.appendChild(el("span", null, p.requestNote));
-        li.appendChild(sourceLine(p));
-        ul.appendChild(li);
-      });
-      req.appendChild(ul);
-      box.appendChild(req);
-    }
-
     var how = el("section", "result-block");
     how.appendChild(el("h3", null, L.assumptionsTitle));
     var al = el("ul", "assume");
+    var sh = cfg.assumptions.debitShare;
+    var shown = r.channels.map(function (c) { return c.id; });
     L.assumptionsList.forEach(function (t) {
-      al.appendChild(el("li", null, fill(t, { debit: pct(cfg.assumptions.debitShare), credit: pct(1 - cfg.assumptions.debitShare) })));
+      if (t.when && shown.indexOf(t.when) === -1) { return; }
+      al.appendChild(el("li", null, fill(t.text || t, {
+        debitWinkel: pct(sh.winkel), creditWinkel: pct(1 - sh.winkel),
+        debitOnline: pct(sh.online), creditOnline: pct(1 - sh.online)
+      })));
     });
     how.appendChild(al);
     box.appendChild(how);
 
     var actions = el("div", "result-actions");
-    var cta = el("a", "btn primary big", cfg.cta.label);
-    cta.href = cfg.cta.url;
-    actions.appendChild(cta);
+    r.channels.forEach(function (c, i) {
+      var cta = el("a", "btn big" + (i === 0 ? " primary" : ""), cfg.channels[c.id].cta.label);
+      cta.href = cfg.channels[c.id].cta.url;
+      actions.appendChild(cta);
+    });
     var again = el("button", "btn ghost", L.restart);
     again.type = "button";
     again.onclick = function () { reset(); go(-1); };
@@ -432,6 +478,7 @@
   }
 
   function render() {
+    syncSteps();
     root.innerHTML = "";
     root.className = "quiz";
     if (state.i >= steps.length && !complete()) { state.i = -1; }

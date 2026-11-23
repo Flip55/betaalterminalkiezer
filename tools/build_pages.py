@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Builds the two provider overview pages: betaalterminals.html and kassasystemen.html.
+"""Builds the four provider overview pages: betaalterminals.html, smartphone-en-qr.html,
+online-betalen.html and kassasystemen.html.
 
 Run from the repository root:  python3 tools/build_pages.py
-Edit TERMINALS or REGISTERS below and run the script again.
+Edit TERMINALS, SOFT, ONLINE or REGISTERS below and run the script again.
 
 Every statement on a card comes from the page named in its source. Nothing has
 been confirmed with the companies. Tariffs used by the calculator live in
@@ -88,6 +89,88 @@ TERMINALS = [
       "De kost per betaling hangt af van het bedrag en van hoe je klant betaalt"],
      "Zelfde toestel als bij Worldline. Niet apart in de rekentool.", ON_REQUEST,
      ("kbc.be, pagina Saturn 1000F2", "https://www.kbc.be/ondernemen/nl/product/betalen-en-betaald-worden/betalingen/ontvangen/saturn-1000f2.html")),
+]
+
+WL_TAP = ("worldline.com, pagina Tap on Mobile", "https://worldline.com/nl-be/home/main-navigation/solutions/merchants/all-in-one-solutions/in-store/worldline-tap-on-mobile")
+
+SOFT = [
+    ("Worldline Tap on Mobile", "App die van je smartphone een terminal maakt",
+     "App van Worldline voor contactloze betalingen op een Android-toestel of iPhone, zonder betaalterminal.",
+     ["Geen maandelijkse kosten en geen activatiekost",
+      "Vanaf € 0,13 per transactie",
+      "Volgens KBC, dat de app aanbiedt: € 0,13 per Belgische debetbetaling en 1,40% + € 0,10 per kredietkaart",
+      "Fooien aannemen kan in de app"],
+     "Publieke tarieven.", IN_TOOL, WL_TAP),
+    ("myPOS Tap to Pay", "Betalen op je telefoon, inbegrepen in elke formule",
+     "Tap to Pay op je telefoon zit in de drie formules van myPOS. Er staat geen apart tarief voor op de tarievenpagina.",
+     ["One, zonder maandkost: 1,49%",
+      "Plus, € 19 per maand: 0,99%",
+      "Pro, € 39 per maand: € 0,12 per Bancontact-betaling"],
+     "Publieke tarieven. We rekenen met de tarieven van de formule.", IN_TOOL,
+     ("mypos.com, pagina Kosten en prijzen", "https://www.mypos.com/nl-be/pricing-and-fees")),
+    ("Bancontact Pro", "QR-code die je klant scant met zijn bankapp",
+     "Betaaldienst van Bancontact Company voor mobiele betalingen met Bancontact en Wero. Je vraagt ze aan via je bank.",
+     ["€ 0,06 per betaling in je zaak en € 18 per jaar, zonder btw",
+      "Werkt met een QR-sticker, een app of een QR-code op je kassa",
+      "Geen toestel, geen huur en geen onderhoudscontract",
+      "Aanvaardt geen betaalkaarten of kredietkaarten"],
+     "Publieke tarieven, nagekeken bij Belfius en BNP Paribas Fortis.", IN_TOOL,
+     ("belfius.be, pagina Bancontact Pro", "https://www.belfius.be/professional/nl/producten/betaalmiddelen/betaaloplossingen/payconiq/index.aspx")),
+    ("Axepta BNP Paribas Soft", "Gratis app via BNP Paribas Fortis",
+     "App die van je smartphone of tablet een betaalterminal maakt, zonder QR-code.",
+     ["De app is gratis: geen installatie, huur of aankoop",
+      "Contactloze debet- en kredietkaarten, Google Pay en Apple Pay",
+      "Minimumfactuur van 5 euro per maand",
+      "Je geld staat de volgende werkdag op je rekening"],
+     "De transactiekosten staan niet op de site.", ON_REQUEST,
+     ("bnpparibasfortis.be, pagina Axepta BNP Paribas Soft", "https://www.bnpparibasfortis.be/nl/public/ondernemers/dagelijks-bankieren/betalingen/betaalsystemen/betaalapp-axepta-bnp-paribas-soft")),
+    ("Mollie Tap to Pay", "Betalen op je eigen iPhone of Android-toestel",
+     "Mollie laat je contactloze betalingen aannemen op je eigen toestel, zonder extra terminal.",
+     ["Geen kost voor een toestel", "Pay as you go zonder maandkost, of Pro voor € 20 per maand"],
+     "Het tarief voor Bancontact stond niet op de pagina die we nakeken.", ON_REQUEST,
+     ("mollie.com, pagina Pricing", "https://www.mollie.com/pricing")),
+]
+
+ONLINE = [
+    ("Viva.com", "Vast bedrag per online Bancontact-betaling",
+     "Aanbieder met een tarievenpagina voor België, voor betalingen in de zaak en online.",
+     ["Bancontact online: € 0,37 per betaling",
+      "Visa en Mastercard van particulieren uit Europa: 2,19% + € 0,24",
+      "Sommige webshop-plug-ins kosten 0,35% extra"],
+     "Publieke tarieven.", IN_TOOL,
+     ("viva.com, pagina Tarieven", "https://www.viva.com/nl-be/pricing")),
+    ("myPOS", "Drie formules, ook voor online betalingen",
+     "Dezelfde drie formules als aan de terminal, met een eigen tarief voor online betalingen.",
+     ["One, zonder maandkost: 1,99% + € 0,20",
+      "Plus, € 19 per maand: 1,49% + € 0,15",
+      "Pro, € 39 per maand: Bancontact 0,50% + € 0,12, kaarten van particulieren uit Europa 1,39% + € 0,12"],
+     "Publieke tarieven.", IN_TOOL,
+     ("mypos.com, pagina Kosten en prijzen", "https://www.mypos.com/nl-be/pricing-and-fees")),
+    ("SumUp", "Eén percentage voor online betalingen",
+     "Naast kaartlezers biedt SumUp ook online betalingen aan.",
+     ["2,50% per online betaling, met of zonder abonnement",
+      "Geen installatiekosten en geen maandelijks minimum"],
+     "Publieke tarieven. Of Bancontact online kan, staat niet op de prijspagina.", IN_TOOL,
+     ("sumup.com, pagina Prijzen", "https://www.sumup.com/nl-be/prijzen/")),
+    ("Mollie", "Betaalaanbieder voor webshops",
+     "Betaalaanbieder voor online betalingen en betalingen in de zaak, zonder minimumkosten of vast contract.",
+     ["Internationale prijspagina: Bancontact 1,40% + € 0,25",
+      "Kaarten van particulieren uit Europa: 1,80% + € 0,25",
+      "Je betaalt alleen voor geslaagde betalingen"],
+     "Andere bronnen noemen voor België € 0,39 per Bancontact-betaling. We konden niet bevestigen welk tarief geldt.", ON_REQUEST,
+     ("mollie.com, pagina Pricing", "https://www.mollie.com/pricing")),
+    ("Stripe", "Betaalplatform voor webshops en apps",
+     "Stripe laat ondernemingen in België online Bancontact en kaarten aanvaarden.",
+     ["Bancontact beschikbaar voor Belgische accounts", "Terugbetalingen volledig of gedeeltelijk mogelijk"],
+     "Het tarief voor België keken we niet na.", ON_REQUEST,
+     ("docs.stripe.com, pagina Bancontact", "https://docs.stripe.com/payments/bancontact")),
+    ("Bancontact Pro", "Alleen Bancontact en Wero, tegen een vast bedrag",
+     "De betaaldienst van Bancontact Company werkt ook in een webshop, met een betaalknop.",
+     ["€ 0,20 per online betaling en € 18 per jaar, volgens KBC",
+      "Geen opstart- of installatiekosten",
+      "Aanvaardt geen kredietkaarten"],
+     "Publiek tarief. Niet in de rekentool, omdat je er geen kaarten mee aanvaardt.", "Publieke prijzen",
+     ("kbc.be, pagina Bancontact PRO", "https://www.kbc.be/business/en/products/making-and-receiving-payments/payments/receive-payments/bancontact-pro.html")),
 ]
 
 REGISTERS = [
@@ -182,27 +265,48 @@ DISCLAIMER = ("Alle merknamen zijn eigendom van hun respectieve houders. Vermeld
               '<a href="index.html#aanbieders">Neem contact met ons op</a>.')
 
 
-def build() -> None:
-    n_tool = sum(1 for t in TERMINALS if t[5] == IN_TOOL)
+def listing(filename, key, title, desc, h1, lead, items, extra="") -> None:
+    n_tool = sum(1 for t in items if t[5] == IN_TOOL)
     page = (
-        head("Betaalterminals in België: aanbieders en tarieven | " + BRAND,
-             "Overzicht van aanbieders van betaalterminals in België, met de tarieven die ze zelf publiceren.",
-             "", "term")
+        head(title + " | " + BRAND, desc, "", key)
         + f"""<div class="page-head">
-  <h1>Aanbieders van betaalterminals op een rij</h1>
-  <p class="lead">{len(TERMINALS)} aanbieders, met wat ze zelf over hun prijzen publiceren. Van {n_tool} aanbieders zitten de tarieven in de rekentool. Zo zie je wat elk van hen jou per maand zou kosten.</p>
+  <h1>{h1}</h1>
+  <p class="lead">{lead.format(n=len(items), tool=n_tool)}</p>{extra}
   <a class="btn primary" href="index.html#quiz">{CTA_LABEL}</a>
 </div>
 <div class="cards">
-{chr(10).join(card(*t) for t in TERMINALS)}
+{chr(10).join(card(*t) for t in items)}
 </div>
-<p class="source">Tarieven nagekeken op {CHECKED}, op de site van elke aanbieder. Eerst staan de aanbieders uit de rekentool, daarna de andere. De volgorde is geen rangschikking. {DISCLAIMER}</p>
+<p class="source">Tarieven nagekeken op {CHECKED}. Eerst staan de aanbieders uit de rekentool, daarna de andere. De volgorde is geen rangschikking. {DISCLAIMER}</p>
 """
-        + closing("Welke terminal is voor jouw zaak het goedkoopst?",
-                  "Beantwoord zes korte vragen. Je ziet per aanbieder de geschatte maandkost, met de berekening erbij.")
+        + closing("Welke oplossing is voor jouw zaak het goedkoopst?",
+                  "Beantwoord enkele korte vragen. Je ziet per aanbieder de geschatte maandkost, met de berekening erbij.")
         + foot("")
     )
-    (ROOT / "betaalterminals.html").write_text(page, encoding="utf-8")
+    (ROOT / filename).write_text(page, encoding="utf-8")
+    print(f"Built {filename} ({len(items)} cards, {n_tool} in tool)")
+
+
+def build() -> None:
+    listing("betaalterminals.html", "term",
+            "Betaalterminals in België: aanbieders en tarieven",
+            "Overzicht van aanbieders van betaalterminals in België, met de tarieven die ze zelf publiceren.",
+            "Aanbieders van betaalterminals op een rij",
+            "{n} aanbieders, met wat ze zelf over hun prijzen publiceren. Van {tool} aanbieders zitten de tarieven in de rekentool. Zo zie je wat elk van hen jou per maand zou kosten.",
+            TERMINALS)
+    listing("smartphone-en-qr.html", "soft",
+            "Betalen via smartphone of QR-code: aanbieders en tarieven",
+            "Betalingen aannemen zonder terminal: apps die van je smartphone een terminal maken en de QR-code van Bancontact.",
+            "Betalingen aannemen zonder terminal",
+            "{n} oplossingen waarbij je geen toestel koopt of huurt: een app op je smartphone of een QR-code die je klant scant. Van {tool} zitten de tarieven in de rekentool.",
+            SOFT,
+            "\n  <p>Een app op je smartphone aanvaardt contactloze kaarten. Een QR-code werkt alleen met de bankapp van je klant en aanvaardt geen kaarten.</p>")
+    listing("online-betalen.html", "online",
+            "Online betalingen in België: aanbieders en tarieven",
+            "Overzicht van aanbieders voor betalingen in je webshop of met een betaallink, met de tarieven die ze zelf publiceren.",
+            "Aanbieders voor online betalingen op een rij",
+            "{n} aanbieders voor je webshop of betaallinks. Van {tool} zitten de tarieven in de rekentool.",
+            ONLINE)
 
     page = (
         head("Kassasystemen in België: leveranciers en prijzen | " + BRAND,
@@ -210,7 +314,7 @@ def build() -> None:
              "", "kassa")
         + f"""<div class="page-head">
   <h1>Kassasystemen voor horeca en winkels op een rij</h1>
-  <p class="lead">Een kassa kies je vaak samen met je betaalterminal. Dit zijn {len(REGISTERS)} leveranciers, met de prijs als ze die zelf publiceren.</p>
+  <p class="lead">Een kassa kies je vaak samen met je betaaloplossing. Dit zijn {len(REGISTERS)} leveranciers, met de prijs als ze die zelf publiceren.</p>
   <p>{BRAND} rekent voor kassasystemen niets uit: de prijs hangt te veel af van hardware en opties. Serveer je maaltijden, vraag dan altijd of het systeem erkend is als geregistreerde kassa.</p>
   <a class="btn primary" href="index.html#quiz">{CTA_LABEL}</a>
 </div>
@@ -219,12 +323,12 @@ def build() -> None:
 </div>
 <p class="source">Nagekeken op {CHECKED}. Eerst staan de leveranciers met publieke prijzen, daarna de andere. De volgorde is geen rangschikking. {DISCLAIMER}</p>
 """
-        + closing("Eerst weten wat je terminal kost?",
-                  "De rekentool toont in één minuut wat elke betaalterminal jou per maand kost. Daarna kies je de kassa die erbij past.")
+        + closing("Eerst weten wat betaald worden je kost?",
+                  "De rekentool toont in één minuut wat elke betaaloplossing jou per maand kost. Daarna kies je de kassa die erbij past.")
         + foot("")
     )
     (ROOT / "kassasystemen.html").write_text(page, encoding="utf-8")
-    print(f"Built betaalterminals.html ({len(TERMINALS)} cards, {n_tool} in tool) and kassasystemen.html ({len(REGISTERS)} cards)")
+    print(f"Built kassasystemen.html ({len(REGISTERS)} cards)")
 
 
 if __name__ == "__main__":

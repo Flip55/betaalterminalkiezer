@@ -25,8 +25,8 @@ a{color:var(--ink)}
 header.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 24px;padding:16px 0}
 .brand{font-family:var(--display);font-weight:700;font-size:1.3rem;text-decoration:none;white-space:nowrap}
 .brand span{display:inline-block;width:.62em;height:.62em;background:var(--accent);border-radius:50%;margin-right:.35em}
-nav.main{display:flex;align-items:center;gap:4px 22px;flex-wrap:wrap}
-nav.main a{text-decoration:none;font-weight:600;font-size:.95rem;padding:6px 0;border-bottom:2px solid transparent}
+nav.main{display:flex;align-items:center;gap:4px 16px;flex-wrap:wrap}
+nav.main a{text-decoration:none;font-weight:600;font-size:.92rem;padding:6px 0;border-bottom:2px solid transparent}
 nav.main a:hover,nav.main a[aria-current=page]{border-bottom-color:var(--accent)}
 nav.main a.btn{padding:9px 18px;border-bottom:2px solid var(--ink)}
 
@@ -118,6 +118,9 @@ section.band{padding:64px 0;border-top:1px solid var(--line)}
 .onrequest li{padding:14px 16px;border:1px dashed var(--line);border-radius:14px}
 .onrequest b{display:block}
 .onrequest span{color:var(--muted);font-size:.95rem}
+.result-block h3.chan{font-size:1.7rem;margin-bottom:.2em}
+.chan-intro{color:var(--muted)}
+.result-block .sub{font-size:1.1rem;margin:22px 0 8px;font-family:var(--display)}
 .checked{font-weight:600;margin:28px 0 0}
 .assume{font-size:.92rem;color:var(--muted);margin:6px 0 0;padding-left:1.2em}
 @media (min-width:720px){

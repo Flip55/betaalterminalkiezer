@@ -1,40 +1,60 @@
 /*
- * Betaalterminalkiezer: alle teksten, vragen, antwoorden en tarieven.
+ * Betaaloplossingkiezer: alle teksten, vragen, antwoorden en tarieven.
  * Pas hier aan wat je wil wijzigen; quiz.js bevat alleen de werking.
  *
  * TARIEVEN
- * - Elk tarief komt van de site van de aanbieder zelf. Bron en datum staan bij
- *   elke aanbieder onder "sources".
+ * - Elk tarief komt van de site van de aanbieder zelf (of van de bank die de
+ *   oplossing verkoopt). Bron en datum staan bij elke aanbieder onder "sources".
  * - Staat een prijs niet op de site van de aanbieder, dan krijgt die aanbieder
- *   "priceOnRequest: true" en rekent de quiz niets uit.
+ *   voor dat kanaal een tekst onder "onRequest" en rekent de quiz niets uit.
  * - Wijzig je een tarief, pas dan ook "checkedOn" aan.
  *
  * EEN PLAN (formule van een aanbieder)
- * - types:   ["mobiel"], ["vast"], beide, of null als de aanbieder het toestel
- *            niet op zijn tarievenpagina toont.
+ * - channel: "winkel" (standaard) of "online".
+ * - types:   voor de winkel: "vast", "mobiel", "smartphone" of "qr". null als de
+ *            aanbieder het toestel niet op zijn tarievenpagina toont.
  * - monthly: vaste kosten per maand, elk met een label.
- * - debit:   kost per betaling met Bancontact of debetkaart.
- *              { fixed: 0.13 }            vast bedrag per betaling
- *              { pct: 0.0169 }            percentage van het bedrag
- *              { tiers: [...], small: {...} }  staffel op het aantal betalingen
+ * - debit:   kost per betaling met Bancontact of debetkaart: { fixed, pct } of
+ *            { tiers: [...], small: {...} } voor een staffel.
  * - credit:  kost per betaling met kredietkaart: { pct, fixed }.
- * - oneOff:  eenmalige kosten (niet in de maandprijs geteld).
+ * - debitOnly: true als de oplossing geen kredietkaarten aanvaardt.
+ * - oneOff:  eenmalige kosten (niet in de maandprijs geteld); null = onbekend.
  * - notes:   wat de lezer bij de berekening moet weten.
  */
 window.QUIZ_CONFIG = {
-  storageKey: "btk-calculator-v1",
+  storageKey: "bok-calculator-v2",
   checkedOn: "23 november 2026",
 
   /* Aannames van de berekening. Zichtbaar op de resultaatpagina. */
   assumptions: {
-    debitShare: 0.9 /* deel van de betalingen met Bancontact of debetkaart; de rest is kredietkaart */
+    /* deel van de betalingen met Bancontact (of debetkaart in de zaak); de rest is kredietkaart */
+    debitShare: { winkel: 0.9, online: 0.7 }
+  },
+
+  channels: {
+    winkel: {
+      title: "In je zaak",
+      intro: "Gerekend met {n} betalingen per maand van gemiddeld {ticket}, samen {turnover} omzet met kaart of smartphone.",
+      debit: "Bancontact of debetkaart",
+      credit: "kredietkaart",
+      turnover: "omzet", ticket: "ticket",
+      cta: { label: "Bekijk de oplossingen voor in de zaak", url: "betaalterminals.html" }
+    },
+    online: {
+      title: "Online",
+      intro: "Gerekend met {n} bestellingen per maand van gemiddeld {ticket}, samen {turnover} online omzet.",
+      debit: "Bancontact",
+      credit: "Visa of Mastercard",
+      turnover: "omzetOnline", ticket: "ticketOnline",
+      cta: { label: "Bekijk de aanbieders voor online betalen", url: "online-betalen.html" }
+    }
   },
 
   start: {
-    title: "Wat kost een betaalterminal jou per maand?",
-    subtitle: "Zes korte vragen over je zaak. Je ziet per aanbieder de geschatte maandkost, met de berekening erbij.",
+    title: "Wat kost betaald worden jou per maand?",
+    subtitle: "Terminal, smartphone, QR-code of webshop: beantwoord enkele korte vragen en zie per aanbieder de geschatte maandkost, met de berekening erbij.",
     button: "Bereken mijn maandkost",
-    note: "6 vragen · 1 minuut · geen gegevens nodig",
+    note: "6 tot 9 vragen · 1 minuut · geen gegevens nodig",
     resume: "Ga verder waar je gebleven was"
   },
 
@@ -45,75 +65,83 @@ window.QUIZ_CONFIG = {
     next: "Volgende",
     restart: "Opnieuw berekenen",
     resultTitle: "Jouw geschatte maandkost per aanbieder",
-    resultIntro: "Gerekend met {n} betalingen per maand van gemiddeld {ticket}, samen {turnover} omzet met de kaart.",
-    top3Title: "De drie voordeligste voor jouw zaak",
+    top3Title: "De voordeligste voor jouw situatie",
     rank: "Nummer {n}",
     perMonth: "per maand",
-    shareOfTurnover: "{pct} van je kaartomzet",
+    shareOfTurnover: "{pct} van deze omzet",
     oneOff: "Eenmalig: {amount}",
+    oneOffNone: "Geen toestel nodig",
     oneOffUnknown: "Prijs van het toestel staat niet op de tarievenpagina",
     allTitle: "Alle aanbieders met publieke tarieven",
     showCalc: "Bekijk de berekening",
     calcFixed: "Vaste kosten: {label}",
-    calcDebitFixed: "{n} betalingen met Bancontact of debetkaart × {rate}",
-    calcDebitPct: "{rate} op {amount} met Bancontact of debetkaart",
+    calcDebitFixed: "{n} betalingen met {debit} × {rate}",
+    calcDebitPct: "{rate} op {amount} met {debit}",
     calcDebitFree: "{n} Bancontact-betalingen tot € 5: gratis",
     calcDebitSmallExtra: "{n} Bancontact-betalingen tot € 5 boven de eerste {free} × {rate}",
-    calcCreditPct: "{rate} op {amount} met kredietkaart",
-    calcCreditFixed: "{n} betalingen met kredietkaart × {rate}",
+    calcCreditPct: "{rate} op {amount} met {credit}",
+    calcCreditFixed: "{n} betalingen met {credit} × {rate}",
     calcTotal: "Geschat per maand",
     calcOneOff: "Eenmalig: {label}",
     sources: "Bron",
     notFit: "Past niet bij je keuze: {type}",
     current: "Je huidige aanbieder",
     currentTitle: "Vergelijking met je huidige aanbieder",
-    currentCheaper: "Bij {current} kom je met deze tarieven uit op {amount} per maand. De voordeligste aanbieder die bij je keuze past, {best}, kost {bestAmount}. Dat is een verschil van {diff} per maand. Vergelijk dit met je eigen factuur: je betaalt misschien een ouder of onderhandeld tarief.",
-    currentBest: "Met deze tarieven is {current} al de voordeligste keuze voor jouw zaak. Vergelijk het bedrag wel met je eigen factuur: je betaalt misschien een ouder tarief.",
+    currentCheaper: "{channel}: bij {current} kom je met deze tarieven uit op {amount} per maand. De voordeligste aanbieder die bij je keuze past, {best}, kost {bestAmount}. Dat is een verschil van {diff} per maand. Vergelijk dit met je eigen factuur: je betaalt misschien een ouder of onderhandeld tarief.",
+    currentBest: "{channel}: met deze tarieven is {current} al de voordeligste keuze. Vergelijk het bedrag wel met je eigen factuur: je betaalt misschien een ouder tarief.",
     currentUnknown: "Van je huidige aanbieder hebben we geen publieke tarieven. Leg de bedragen hierboven naast je laatste factuur.",
     onRequestTitle: "Prijs op aanvraag",
-    onRequestIntro: "Deze aanbieders publiceren geen volledige tarieven voor België. We schatten niets en tonen hen daarom zonder bedrag.",
+    onRequestIntro: "Van deze aanbieders vonden we geen volledige tarieven voor België. We schatten niets en tonen hen daarom zonder bedrag.",
     notesTitle: "Goed om te weten voor jouw zaak",
     checked: "Tarieven nagekeken op {date}.",
     assumptionsTitle: "Zo rekenden we",
     assumptionsList: [
-      "Het aantal betalingen is je kaartomzet gedeeld door je gemiddelde ticket.",
-      "We nemen aan dat {debit} van je betalingen met Bancontact of een debetkaart gebeurt en {credit} met een kredietkaart van een particulier uit Europa. Zakelijke kaarten en kaarten van buiten Europa kosten bij elke aanbieder meer.",
+      "Het aantal betalingen is je omzet gedeeld door je gemiddelde bedrag. We rekenen met het midden van de schijf die je koos.",
+      { when: "winkel", text: "In je zaak: we nemen aan dat {debitWinkel} van je betalingen met Bancontact of een debetkaart gebeurt en {creditWinkel} met een kredietkaart van een particulier uit Europa." },
+      { when: "online", text: "Online: we nemen aan dat {debitOnline} van je bestellingen met Bancontact betaald wordt en {creditOnline} met een Visa- of Mastercard-kaart van een particulier uit Europa." },
+      "Zakelijke kaarten en kaarten van buiten Europa kosten bij elke aanbieder meer.",
       "Per aanbieder tonen we de formule die voor jouw cijfers het goedkoopst uitkomt.",
-      "Eenmalige kosten zoals de aankoop van het toestel staan apart en zitten niet in de maandprijs.",
+      "Eenmalige kosten zoals de aankoop van een toestel staan apart en zitten niet in de maandprijs.",
       "Tijdelijke kortingen en acties tellen niet mee.",
       "De meeste bedragen zijn zonder btw. Bij sommige aanbieders staat niet op de site of de btw inbegrepen is."
     ],
     disclaimer: "Dit is een schatting op basis van publieke tarieven, geen offerte. De vermelde bedrijven zijn geen partner van deze site en hebben de teksten niet bevestigd. Controleer de prijs altijd bij de aanbieder."
   },
 
-  cta: {
-    label: "Bekijk de aanbieders en vraag offertes aan",
-    url: "betaalterminals.html"
-  },
-
   /*
    * Vragen. "value" is het getal waarmee we rekenen.
+   * "when" bepaalt bij welk antwoord op de eerste vraag een vraag verschijnt.
    * "note" bij een antwoord verschijnt op de resultaatpagina.
    */
   questions: [
+    {
+      id: "kanaal",
+      text: "Waar betalen je klanten?",
+      explain: "Een betaling in je zaak en een betaling in een webshop hebben andere tarieven en vaak andere aanbieders. We stellen alleen de vragen die voor jou tellen.",
+      options: [
+        { id: "winkel", label: "In mijn zaak of onderweg", channels: ["winkel"] },
+        { id: "online", label: "Online, in een webshop of met een betaallink", channels: ["online"] },
+        { id: "beide", label: "Allebei", channels: ["winkel", "online"], note: "Je verkoopt in je zaak en online. Bij één aanbieder voor beide heb je één overzicht en één aanspreekpunt, maar dat is niet altijd het goedkoopst. Vergelijk de twee lijsten hierboven." }
+      ]
+    },
     {
       id: "sector",
       text: "In welke sector werk je?",
       explain: "De sector verandert de prijs niet. We gebruiken hem om je onderaan het resultaat te wijzen op wat voor jouw soort zaak telt, zoals de geregistreerde kassa in de horeca.",
       options: [
-        { id: "horeca", label: "Horeca (café, restaurant, frituur)", note: "In de horeca kies je de terminal best samen met je kassa. Wie maaltijden serveert, heeft vanaf een bepaalde omzet een geregistreerd kassasysteem nodig. Bekijk de kassasystemen op deze site en vraag je boekhouder of de regel voor jou geldt." },
+        { id: "horeca", label: "Horeca (café, restaurant, frituur)", note: "In de horeca kies je de betaaloplossing best samen met je kassa. Wie maaltijden serveert, heeft vanaf een bepaalde omzet een geregistreerd kassasysteem nodig. Bekijk de kassasystemen op deze site en vraag je boekhouder of de regel voor jou geldt." },
         { id: "voeding", label: "Voedingswinkel (bakker, slager, kruidenier)", note: "Veel kleine bedragen? Dan weegt een vast bedrag per betaling zwaarder door. Kijk in de berekening welke aanbieder kleine Bancontact-betalingen goedkoper of gratis verwerkt." },
-        { id: "winkel", label: "Winkel (kleding, cadeau, doe-het-zelf)" },
+        { id: "winkel", label: "Winkel of webshop" },
         { id: "diensten", label: "Diensten en vrije beroepen" },
         { id: "zorg", label: "Schoonheid en zorg (kapper, kinesist)" },
-        { id: "markt", label: "Markt, foodtruck of evenementen", note: "Werk je op verplaatsing, kies dan een toestel met een eigen simkaart of een goede verbinding via je telefoon. Vraag ook hoe lang de batterij meegaat." },
+        { id: "markt", label: "Markt, foodtruck of evenementen", note: "Werk je op verplaatsing, kies dan een oplossing met een goede mobiele verbinding: een toestel met een eigen simkaart, je smartphone of een QR-code." },
         { id: "andere", label: "Iets anders" }
       ]
     },
     {
-      id: "omzet",
-      text: "Hoeveel omzet ontvang je per maand met de kaart?",
-      explain: "Tel alleen wat klanten met Bancontact, debetkaart of kredietkaart betalen. Start je nog, kies dan wat je verwacht. We rekenen met het midden van de schijf.",
+      id: "omzet", when: "winkel",
+      text: "Hoeveel omzet ontvang je per maand elektronisch in je zaak?",
+      explain: "Tel alleen wat klanten in je zaak met Bancontact, debetkaart, kredietkaart of smartphone betalen. Start je nog, kies dan wat je verwacht. We rekenen met het midden van de schijf.",
       options: [
         { id: "o1", label: "Minder dan € 2.500", value: 1500 },
         { id: "o2", label: "€ 2.500 tot € 5.000", value: 3750 },
@@ -124,8 +152,8 @@ window.QUIZ_CONFIG = {
       ]
     },
     {
-      id: "ticket",
-      text: "Hoeveel betaalt een klant gemiddeld per keer?",
+      id: "ticket", when: "winkel",
+      text: "Hoeveel betaalt een klant in je zaak gemiddeld per keer?",
       explain: "Sommige aanbieders vragen een vast bedrag per betaling, andere een percentage. Bij kleine bedragen is een percentage vaak goedkoper, bij grote bedragen een vast bedrag. Daarom maakt je gemiddelde ticket een groot verschil.",
       options: [
         { id: "t1", label: "Minder dan € 5", value: 4 },
@@ -137,29 +165,55 @@ window.QUIZ_CONFIG = {
       ]
     },
     {
-      id: "type",
-      text: "Wil je een vaste of een mobiele terminal?",
-      explain: "Een vaste terminal staat aan de toonbank en werkt via je internetkabel. Een mobiele terminal neem je mee naar de tafel, het terras of de klant en werkt via wifi of een simkaart.",
+      id: "type", when: "winkel",
+      text: "Hoe wil je betalingen in je zaak aannemen?",
+      explain: "Een vaste terminal staat aan de toonbank. Een mobiele terminal neem je mee. Zonder toestel kan ook: met een app maak je van je smartphone een terminal, of je klant scant een QR-code met zijn bankapp.",
       options: [
-        { id: "vast", label: "Vast, aan de toonbank" },
-        { id: "mobiel", label: "Mobiel, om mee te nemen" },
-        { id: "beide", label: "Maakt mij niet uit" }
+        { id: "vast", label: "Met een vaste terminal aan de toonbank", types: ["vast"] },
+        { id: "mobiel", label: "Met een mobiele terminal of kaartlezer", types: ["mobiel"] },
+        { id: "zonder", label: "Zonder toestel: met mijn smartphone of een QR-code", types: ["smartphone", "qr"] },
+        { id: "beide", label: "Maakt mij niet uit", types: ["vast", "mobiel", "smartphone"], note: "Je hebt geen voorkeur voor een toestel. We vergelijken terminals en smartphone-apps. Een QR-code zonder toestel is nog goedkoper per betaling, maar aanvaardt geen kredietkaarten; kies 'zonder toestel' om die optie te zien." }
       ]
     },
     {
-      id: "kassa",
-      text: "Moet de terminal samenwerken met je kassa?",
-      explain: "Met een koppeling stuurt de kassa het bedrag zelf naar de terminal. Je tikt niets twee keer in en maakt minder fouten. Niet elke terminal werkt met elke kassa.",
+      id: "kassa", when: "winkel",
+      text: "Moet de betaaloplossing samenwerken met je kassa?",
+      explain: "Met een koppeling stuurt de kassa het bedrag zelf naar de terminal. Je tikt niets twee keer in en maakt minder fouten. Niet elke oplossing werkt met elke kassa.",
       options: [
-        { id: "ja", label: "Ja, ik heb een kassa of wil er een", note: "Je wil een koppeling met je kassa. Vraag elke aanbieder vóór je tekent of zijn terminal met jouw kassasysteem werkt en wat de koppeling kost. Die kost zit niet in de bedragen hierboven. Op de pagina Kassasystemen vind je kassa's met een eigen betaaloplossing." },
-        { id: "nee", label: "Nee, de terminal staat los" },
-        { id: "weetniet", label: "Dat weet ik nog niet", note: "Twijfel je over een kassa? Lees eerst het blogartikel over kassa en terminal koppelen. Een losse terminal kan je later meestal vervangen zonder hoge kosten." }
+        { id: "ja", label: "Ja, ik heb een kassa of wil er een", note: "Je wil een koppeling met je kassa. Vraag elke aanbieder vóór je tekent of zijn oplossing met jouw kassasysteem werkt en wat de koppeling kost. Die kost zit niet in de bedragen hierboven. Op de pagina Kassasystemen vind je kassa's met een eigen betaaloplossing." },
+        { id: "nee", label: "Nee, dat hoeft niet" },
+        { id: "weetniet", label: "Dat weet ik nog niet", note: "Twijfel je over een kassa? Lees eerst het blogartikel over kassa en terminal koppelen. Een losse betaaloplossing kan je later meestal vervangen zonder hoge kosten." }
+      ]
+    },
+    {
+      id: "omzetOnline", when: "online",
+      text: "Hoeveel omzet ontvang je per maand online?",
+      explain: "Tel wat klanten betalen in je webshop of via een betaallink. Start je nog, kies dan wat je verwacht. We rekenen met het midden van de schijf.",
+      options: [
+        { id: "o1", label: "Minder dan € 2.500", value: 1500 },
+        { id: "o2", label: "€ 2.500 tot € 5.000", value: 3750 },
+        { id: "o3", label: "€ 5.000 tot € 10.000", value: 7500 },
+        { id: "o4", label: "€ 10.000 tot € 25.000", value: 17500 },
+        { id: "o5", label: "€ 25.000 tot € 50.000", value: 37500 },
+        { id: "o6", label: "Meer dan € 50.000", value: 75000 }
+      ]
+    },
+    {
+      id: "ticketOnline", when: "online",
+      text: "Hoe groot is een online bestelling gemiddeld?",
+      explain: "Online vragen de meeste aanbieders een vast bedrag per betaling, een percentage, of beide. Bij kleine bestellingen weegt het vaste bedrag zwaar door.",
+      options: [
+        { id: "t2", label: "Minder dan € 15", value: 10 },
+        { id: "t3", label: "€ 15 tot € 30", value: 22 },
+        { id: "t4", label: "€ 30 tot € 60", value: 45 },
+        { id: "t5", label: "€ 60 tot € 150", value: 100 },
+        { id: "t6", label: "Meer dan € 150", value: 250 }
       ]
     },
     {
       id: "huidig",
       text: "Bij wie zit je vandaag?",
-      explain: "Heb je al een terminal, dan zetten we je huidige aanbieder in de lijst in de kijker. Zo zie je meteen of overstappen iets kan opleveren.",
+      explain: "Heb je al een betaaloplossing, dan zetten we je huidige aanbieder in de lijst in de kijker. Zo zie je meteen of overstappen iets kan opleveren.",
       options: [
         { id: "geen", label: "Nog bij niemand, ik start" },
         { id: "worldline", label: "Worldline" },
@@ -167,12 +221,13 @@ window.QUIZ_CONFIG = {
         { id: "sumup", label: "SumUp" },
         { id: "mypos", label: "myPOS" },
         { id: "viva", label: "Viva.com" },
+        { id: "bancontactpro", label: "Bancontact Pro (QR-code)" },
         { id: "andere", label: "Een andere aanbieder of via mijn bank" }
       ]
     }
   ],
 
-  typeLabels: { vast: "vaste terminal", mobiel: "mobiele terminal" },
+  typeLabels: { vast: "vaste terminal", mobiel: "mobiele terminal", zonder: "zonder toestel", beide: "terminal of smartphone" },
 
   /*
    * Aanbieders. Alle tarieven nagekeken op de datum in "checkedOn".
@@ -198,9 +253,27 @@ window.QUIZ_CONFIG = {
             "Voor zakelijke kaarten en kaarten van buiten Europa rekent Worldline 1,20% extra.",
             "Worldline vermeldt bij de huur en de transactiekosten niet of de btw inbegrepen is."
           ]
+        },
+        {
+          id: "tap",
+          label: "Tap on Mobile, app op je smartphone",
+          types: ["smartphone"],
+          monthly: [],
+          debit: { fixed: 0.13 },
+          credit: { pct: 0.014, fixed: 0.10 },
+          oneOff: [],
+          notes: [
+            "Geen maandelijkse kosten en geen activatiekost. Je hebt een Android-toestel of iPhone met NFC nodig.",
+            "Alleen contactloze betalingen.",
+            "Worldline vermeldt 'vanaf € 0,13 per transactie'. De tarieven per kaartsoort komen van de pagina van KBC, dat Tap on Mobile van Worldline aanbiedt.",
+            "We keken niet na of de jaarlijkse compliancekost van Worldline ook voor de app geldt."
+          ]
         }
       ],
+      onRequest: { online: "Worldline biedt ook online betalingen aan. De tarieven daarvoor keken we niet na op de site van Worldline." },
       sources: [
+        { label: "worldline.com, pagina Tap on Mobile", url: "https://worldline.com/nl-be/home/main-navigation/solutions/merchants/all-in-one-solutions/in-store/worldline-tap-on-mobile" },
+        { label: "kbc.be, pagina Tap on Mobile (tarieven per kaartsoort)", url: "https://www.kbc.be/ondernemen/nl/product/betalen-en-betaald-worden/betalingen/ontvangen/tap-on-mobile.html" },
         { label: "worldline.com, pagina Saturn 1000F2", url: "https://worldline.com/nl-be/home/main-navigation/solutions/merchants/all-in-one-solutions/in-store/saturn1000f2-all-in-one" }
       ]
     },
@@ -305,6 +378,14 @@ window.QUIZ_CONFIG = {
             "SumUp noemt Bancontact als betaalmethode maar vermeldt er geen apart tarief voor. We rekenen met het tarief voor betaalkaarten.",
             "Andere toestellen: Solo met printer € 109, Terminal € 169."
           ]
+        },
+        {
+          id: "online", channel: "online", label: "Online betalingen",
+          monthly: [],
+          debit: { pct: 0.025 },
+          credit: { pct: 0.025, fixed: 0 },
+          oneOff: [],
+          notes: ["2,50% per online betaling, met of zonder abonnement.", "SumUp vermeldt niet of je online ook Bancontact kan aanbieden. We rekenen voor alle betalingen met 2,50%. Vraag dit na."]
         }
       ],
       sources: [
@@ -318,13 +399,13 @@ window.QUIZ_CONFIG = {
         {
           id: "one",
           label: "One",
-          types: ["mobiel"],
+          types: ["mobiel", "smartphone"],
           monthly: [],
           debit: { pct: 0.0149 },
           credit: { pct: 0.0149, fixed: 0 },
           oneOff: null,
           notes: [
-            "Geen maandelijkse kosten.",
+            "Geen maandelijkse kosten. Tap to Pay op je telefoon is inbegrepen; daarvoor heb je geen toestel nodig.",
             "Andere kaarten, zoals zakelijke kaarten en American Express: 2,69%.",
             "myPOS vermeldt op de tarievenpagina niet of de prijzen zonder btw zijn."
           ]
@@ -332,7 +413,7 @@ window.QUIZ_CONFIG = {
         {
           id: "plus",
           label: "Plus",
-          types: ["mobiel"],
+          types: ["mobiel", "smartphone"],
           monthly: [{ label: "abonnement Plus", amount: 19 }],
           debit: { pct: 0.0099 },
           credit: { pct: 0.0099, fixed: 0 },
@@ -346,7 +427,7 @@ window.QUIZ_CONFIG = {
         {
           id: "pro",
           label: "Pro",
-          types: ["mobiel"],
+          types: ["mobiel", "smartphone"],
           monthly: [{ label: "abonnement Pro", amount: 39 }],
           debit: { fixed: 0.12 },
           credit: { pct: 0.0089, fixed: 0 },
@@ -356,6 +437,30 @@ window.QUIZ_CONFIG = {
             "Andere kaarten, zoals zakelijke kaarten en American Express: 2,29%.",
             "myPOS vermeldt op de tarievenpagina niet of de prijzen zonder btw zijn."
           ]
+        },
+        {
+          id: "one-online", channel: "online", label: "One, online",
+          monthly: [],
+          debit: { pct: 0.0199, fixed: 0.20 },
+          credit: { pct: 0.0199, fixed: 0.20 },
+          oneOff: [],
+          notes: ["Geen maandelijkse kosten.", "Andere kaarten: 3,19% + € 0,20.", "myPOS vermeldt niet of de prijzen zonder btw zijn."]
+        },
+        {
+          id: "plus-online", channel: "online", label: "Plus, online",
+          monthly: [{ label: "abonnement Plus", amount: 19 }],
+          debit: { pct: 0.0149, fixed: 0.15 },
+          credit: { pct: 0.0149, fixed: 0.15 },
+          oneOff: [],
+          notes: ["Het abonnement geldt ook voor je betalingen in de zaak. Reken het dus maar één keer als je myPOS voor beide gebruikt.", "Andere kaarten: 2,99% + € 0,15.", "myPOS vermeldt niet of de prijzen zonder btw zijn."]
+        },
+        {
+          id: "pro-online", channel: "online", label: "Pro, online",
+          monthly: [{ label: "abonnement Pro", amount: 39 }],
+          debit: { pct: 0.005, fixed: 0.12 },
+          credit: { pct: 0.0139, fixed: 0.12 },
+          oneOff: [],
+          notes: ["Het abonnement geldt ook voor je betalingen in de zaak. Reken het dus maar één keer als je myPOS voor beide gebruikt.", "Andere kaarten: 2,79% + € 0,12.", "myPOS vermeldt niet of de prijzen zonder btw zijn."]
         }
       ],
       sources: [
@@ -379,6 +484,14 @@ window.QUIZ_CONFIG = {
             "Zakelijke kaarten hebben een ander tarief. American Express: 2,75%.",
             "Viva.com toont op de tarievenpagina geen toestellen en vermeldt niet of de prijzen zonder btw zijn. Vraag na welke vaste en mobiele toestellen er zijn."
           ]
+        },
+        {
+          id: "online", channel: "online", label: "Online betalingen",
+          monthly: [{ label: "maandelijkse kost van het Default-pakket", amount: 4.99 }],
+          debit: { fixed: 0.37 },
+          credit: { pct: 0.0219, fixed: 0.24 },
+          oneOff: [],
+          notes: ["Het pakket geldt ook voor je betalingen in de zaak. Reken het dus maar één keer als je Viva.com voor beide gebruikt.", "Sommige webshop-plug-ins kosten volgens Viva.com 0,35% extra.", "Zakelijke kaarten en kaarten van buiten Europa hebben een ander tarief."]
         }
       ],
       sources: [
@@ -386,17 +499,53 @@ window.QUIZ_CONFIG = {
       ]
     },
     {
+      id: "bancontactpro",
+      name: "Bancontact Pro",
+      plans: [
+        {
+          id: "qr",
+          label: "QR-code, zonder toestel",
+          types: ["qr"],
+          debitOnly: true,
+          monthly: [{ label: "jaarlijkse kost van € 18, per maand", amount: 1.5 }],
+          debit: { fixed: 0.06 },
+          credit: { pct: 0, fixed: 0 },
+          oneOff: [],
+          notes: [
+            "Je klant scant een QR-code met zijn bankapp of de Bancontact Pay-app en betaalt met Bancontact of Wero.",
+            "Aanvaardt geen kaarten en dus ook geen kredietkaarten. We rekenen alsof al je klanten met de QR-code betalen.",
+            "Prijzen zonder btw. Maximaal € 1.500 per betaling via de Bancontact Pay-app, volgens Belfius.",
+            "Je vraagt het contract aan via je bank of bij Bancontact Company."
+          ]
+        }
+      ],
+      sources: [
+        { label: "belfius.be, pagina Bancontact Pro", url: "https://www.belfius.be/professional/nl/producten/betaalmiddelen/betaaloplossingen/payconiq/index.aspx" },
+        { label: "bnpparibasfortis.be, pagina Wero en Bancontact", url: "https://www.bnpparibasfortis.be/nl/public/ondernemers/dagelijks-bankieren/betalingen/betaalsystemen/wero-zakelijk" }
+      ]
+    },
+    {
       id: "mollie",
       name: "Mollie",
-      priceOnRequest: true,
-      requestNote: "Mollie publiceert tarieven voor betalingen in de winkel, maar op de pagina die we konden nakijken staat geen tarief voor Bancontact aan de terminal. Zonder dat tarief rekenen we niets uit.",
+      onRequest: {
+        winkel: "Mollie publiceert tarieven voor betalingen in de zaak, maar op de pagina die we konden nakijken staat geen tarief voor Bancontact aan de terminal. Zonder dat tarief rekenen we niets uit.",
+        online: "Op de internationale prijspagina van Mollie staat voor Bancontact 1,40% + € 0,25 en voor kaarten van particulieren uit Europa 1,80% + € 0,25. Andere bronnen noemen voor Belgische accounts een vast bedrag van € 0,39 per Bancontact-betaling. We konden niet bevestigen welk tarief voor jou geldt en rekenen daarom niets uit."
+      },
       sources: [{ label: "mollie.com, pagina Pricing", url: "https://www.mollie.com/pricing" }]
+    },
+    {
+      id: "stripe",
+      name: "Stripe",
+      onRequest: { online: "Stripe aanvaardt Bancontact en kaarten voor Belgische ondernemingen. Het tarief voor België konden we niet nakijken op de site van Stripe." },
+      sources: [{ label: "docs.stripe.com, pagina Bancontact", url: "https://docs.stripe.com/payments/bancontact" }]
     },
     {
       id: "axepta",
       name: "Axepta BNP Paribas",
-      priceOnRequest: true,
-      requestNote: "Biedt via BNP Paribas Fortis de formule All-in-One Grow aan: een vast bedrag van 35, 55, 75 of 115 euro per maand voor de huur van de terminal met een bepaald transactievolume. Welk volume bij welk bedrag hoort, staat niet op de site.",
+      onRequest: {
+        winkel: "Biedt via BNP Paribas Fortis de formule All-in-One Grow aan: een vast bedrag van 35, 55, 75 of 115 euro per maand voor de huur van de terminal met een bepaald transactievolume. Welk volume bij welk bedrag hoort, staat niet op de site. Er is ook de app Axepta BNP Paribas Soft voor je smartphone: gratis, met een minimumfactuur van 5 euro per maand; de transactiekosten staan niet op de site.",
+        online: "Biedt ook betaaloplossingen voor webshops aan. De tarieven staan niet op de site van BNP Paribas Fortis."
+      },
       sources: [{ label: "bnpparibasfortis.be, pagina Betaalterminal", url: "https://www.bnpparibasfortis.be/nl/public/ondernemers/dagelijks-bankieren/betalingen/betaalsystemen/betaalterminal" }]
     }
   ]

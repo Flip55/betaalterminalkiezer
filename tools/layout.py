@@ -4,16 +4,17 @@ index.html is written by hand and repeats the same header and footer markup.
 """
 import html
 
-BRAND = "Betaalterminalkiezer"
+BRAND = "Betaaloplossingkiezer"
 CHECKED = "23 november 2026"
 NOTE = ("Demo-versie. De vermelde bedrijven zijn geen partner van deze site en hebben de teksten "
         "niet bevestigd. Je antwoorden in de rekentool blijven in je browser.")
 
 NAV = [
     ("term", "betaalterminals.html", "Betaalterminals"),
+    ("soft", "smartphone-en-qr.html", "Smartphone en QR"),
+    ("online", "online-betalen.html", "Online betalen"),
     ("kassa", "kassasystemen.html", "Kassasystemen"),
     ("blog", "blog/index.html", "Blog"),
-    ("werking", "index.html#werking", "Hoe het werkt"),
 ]
 CTA_LABEL = "Bereken mijn maandkost"
 FONTS = "https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@500;700;800&family=Red+Hat+Text:wght@400;600&display=swap"
@@ -54,6 +55,8 @@ def foot(prefix: str) -> str:
   <nav aria-label="Voettekst">
     <a href="{prefix}index.html#quiz">Bereken je maandkost</a>
     <a href="{prefix}betaalterminals.html">Betaalterminals</a>
+    <a href="{prefix}smartphone-en-qr.html">Smartphone en QR</a>
+    <a href="{prefix}online-betalen.html">Online betalen</a>
     <a href="{prefix}kassasystemen.html">Kassasystemen</a>
     <a href="{prefix}blog/index.html">Blog</a>
     <a href="{prefix}index.html#aanbieders">Voor aanbieders</a>
