@@ -55,7 +55,9 @@ window.QUIZ_CONFIG = {
     subtitle: "Terminal, smartphone, QR-code of webshop: beantwoord enkele korte vragen en zie per aanbieder de geschatte maandkost, met de berekening erbij.",
     button: "Bereken mijn maandkost",
     note: "6 tot 9 vragen · 1 minuut · geen gegevens nodig",
-    resume: "Ga verder waar je gebleven was"
+    resume: "Ga verder waar je gebleven was",
+    /* Foto naast de starttekst. Laat "image" weg om zonder foto te werken. */
+    image: { src: "assets/hero.jpg", small: "assets/hero-800.jpg", width: 1400, height: 792, alt: "Een klant betaalt met zijn kaart aan de betaalterminal van een winkelier in een Belgische winkelstraat." }
   },
 
   labels: {

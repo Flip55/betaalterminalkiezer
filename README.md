@@ -9,6 +9,7 @@ Demo site for a Belgian payment solutions comparator: a cost calculator that sho
 | `index.html` | Homepage with the calculator as hero. Written by hand. |
 | `assets/quiz-config.js` | All quiz texts, questions, answers, tariffs, sources and the date the tariffs were checked. Edit this to change the calculator. |
 | `assets/quiz.js` | Calculator logic: screens, cost calculation, result page, progress saved in `localStorage`. |
+| `assets/hero.jpg`, `assets/hero-800.jpg` | Hero photo next to the start text, in two sizes. Path and alt text are in `start.image` in the config. |
 | `assets/site.css` | Styles for every page. The palette is the `:root` block at the top. |
 | `betaalterminals.html`, `smartphone-en-qr.html`, `online-betalen.html`, `kassasystemen.html` | Provider overview pages. Generated. |
 | `blog/` | Blog overview and 10 test articles. Generated. |

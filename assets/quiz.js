@@ -206,7 +206,17 @@
   /* ---------- Schermen ---------- */
 
   function renderStart() {
-    var box = el("div", "quiz-start");
+    var wrap = el("div", "quiz-start");
+    var box = el("div", "quiz-start-text");
+    wrap.appendChild(box);
+    if (cfg.start.image) {
+      var im = cfg.start.image, img = el("img", "quiz-start-img");
+      img.src = im.src; img.alt = im.alt; img.width = im.width; img.height = im.height;
+      if (im.small) { img.srcset = im.small + " 800w, " + im.src + " " + im.width + "w"; img.sizes = "(min-width: 900px) 520px, 100vw"; }
+      img.decoding = "async";
+      wrap.classList.add("has-img");
+      wrap.appendChild(img);
+    }
     box.appendChild(el("h1", null, cfg.start.title));
     box.appendChild(el("p", "lead", cfg.start.subtitle));
     var hasProgress = Object.keys(state.answers).length > 0;
@@ -220,7 +230,7 @@
     };
     box.appendChild(b);
     box.appendChild(el("p", "quiz-note", cfg.start.note));
-    return box;
+    return wrap;
   }
 
   function renderQuestion() {

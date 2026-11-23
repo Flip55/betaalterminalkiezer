@@ -44,7 +44,15 @@ section.band{padding:64px 0;border-top:1px solid var(--line)}
 /* Quiz */
 .quiz{background:var(--white);border:1px solid var(--line);border-radius:20px;padding:28px 22px;margin:20px 0 56px;box-shadow:0 18px 40px -28px rgba(43,23,64,.4);scroll-margin-top:16px}
 .quiz:focus{outline:none}
-.quiz-start{max-width:760px;padding:28px 0}
+.quiz-start{padding:12px 0}
+.quiz-start-text{max-width:760px;padding:16px 0}
+.quiz-start.has-img{display:grid;gap:20px;align-items:center}
+.quiz-start-img{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover;object-position:60% 50%;border-radius:16px}
+@media (min-width:900px){
+  .quiz-start.has-img{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px}
+  .quiz-start.has-img h1{font-size:clamp(2rem,3.4vw,2.9rem)}
+  .quiz-start-img{aspect-ratio:4/3.6;height:100%;max-height:460px}
+}
 .quiz-start .lead{margin-bottom:28px}
 .quiz-note{margin:16px 0 0;color:var(--muted);font-size:.95rem}
 .quiz-card{max-width:720px;margin:0 auto}
