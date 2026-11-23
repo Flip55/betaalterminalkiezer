@@ -1,6 +1,6 @@
 # Betaaloplossingkiezer
 
-Demo site for a Belgian payment solutions comparator: a cost calculator that shows what each provider would cost per month in the shop (terminal, smartphone app, QR code) and online, overview pages for payment terminals, smartphone and QR, online payments and cash register systems, and a blog. The repository keeps its first name, `betaalterminalkiezer`. Static files only, served by GitHub Pages. Built on the structure of `Flip55/cyberkiezer`.
+Site for a Belgian payment solutions comparator: a cost calculator that shows what each provider would cost per month in the shop (terminal, smartphone app, QR code) and online, overview pages for payment terminals, smartphone and QR, online payments and cash register systems, and a blog. The repository keeps its first name, `betaalterminalkiezer`. Static files only, served by GitHub Pages. Built on the structure of `Flip55/cyberkiezer`.
 
 ## Structure
 
@@ -15,7 +15,7 @@ Demo site for a Belgian payment solutions comparator: a cost calculator that sho
 | `blog/` | Blog overview and 10 test articles. Generated. |
 | `tools/build_pages.py` | Card data and generator for the four overview pages. |
 | `tools/build_blog.py` | Article texts and generator for the blog. |
-| `tools/layout.py` | Shared header, navigation, footer, brand name and demo banner for generated pages. |
+| `tools/layout.py` | Shared header, navigation, footer, brand name and notice banner for generated pages. |
 | `tools/test_quiz.js` | Tests for the calculation (hand-calculated cases). |
 | `tools/check_links.py` | Checks every internal link and anchor. |
 
@@ -47,7 +47,7 @@ python3 tools/check_links.py
 5. A subscription that covers both channels (myPOS, Viva.com) is counted in each list, so the two lists must not be added up.
 6. One-off costs are shown separately. Temporary promotions are not counted.
 
-## What this demo does not do
+## What this site does not do
 
 - No form, no database, no login. Answers stay in the visitor's browser.
 - The listed companies are not partners and have not confirmed the texts.

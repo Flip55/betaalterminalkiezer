@@ -6,7 +6,7 @@ import html
 
 BRAND = "Betaaloplossingkiezer"
 CHECKED = "23 november 2026"
-NOTE = ("Demo-versie. De vermelde bedrijven zijn geen partner van deze site en hebben de teksten "
+NOTE = ("De vermelde bedrijven zijn geen partner van deze site en hebben de teksten "
         "niet bevestigd. Je antwoorden in de rekentool blijven in je browser.")
 
 NAV = [
@@ -39,7 +39,7 @@ def head(title: str, description: str, prefix: str, active: str, note: str = NOT
 <link rel="stylesheet" href="{prefix}assets/site.css">
 </head>
 <body>
-<div class="demo-note">{html.escape(note)}</div>
+<div class="site-note">{html.escape(note)}</div>
 <div class="wrap">
 <header class="top">
   <a class="brand" href="{prefix}index.html"><span></span>{BRAND}</a>
@@ -61,7 +61,7 @@ def foot(prefix: str) -> str:
     <a href="{prefix}blog/index.html">Blog</a>
     <a href="{prefix}index.html#aanbieders">Voor aanbieders</a>
   </nav>
-  <p>{BRAND} is een demo. De bedragen zijn schattingen op basis van publieke tarieven en vervangen geen offerte.</p>
+  <p>De bedragen zijn schattingen op basis van publieke tarieven en vervangen geen offerte.</p>
 </footer>
 </div>
 </body>
