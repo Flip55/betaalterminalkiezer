@@ -6,8 +6,7 @@ import html
 
 BRAND = "Betaaloplossingkiezer"
 CHECKED = "23 november 2026"
-NOTE = ("De vermelde bedrijven zijn geen partner van deze site en hebben de teksten "
-        "niet bevestigd. Je antwoorden in de rekentool blijven in je browser.")
+NOTE = ""  # text for a notice bar above the header; empty means no bar
 
 NAV = [
     ("term", "betaalterminals.html", "Betaalterminals"),
@@ -26,6 +25,7 @@ def head(title: str, description: str, prefix: str, active: str, note: str = NOT
         f'<a href="{prefix}{href}"{current if key == active else ""}>{label}</a>'
         for key, href, label in NAV
     )
+    bar = f'<div class="site-note">{html.escape(note)}</div>\n' if note else ""
     return f"""<!DOCTYPE html>
 <html lang="nl-BE">
 <head>
@@ -39,8 +39,7 @@ def head(title: str, description: str, prefix: str, active: str, note: str = NOT
 <link rel="stylesheet" href="{prefix}assets/site.css">
 </head>
 <body>
-<div class="site-note">{html.escape(note)}</div>
-<div class="wrap">
+{bar}<div class="wrap">
 <header class="top">
   <a class="brand" href="{prefix}index.html"><span></span>{BRAND}</a>
   <nav class="main" aria-label="Hoofdmenu">{links}<a class="btn primary" href="{prefix}index.html#quiz">{CTA_LABEL}</a></nav>

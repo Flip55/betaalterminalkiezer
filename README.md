@@ -15,7 +15,7 @@ Site for a Belgian payment solutions comparator: a cost calculator that shows wh
 | `blog/` | Blog overview and 10 test articles. Generated. |
 | `tools/build_pages.py` | Card data and generator for the four overview pages. |
 | `tools/build_blog.py` | Article texts and generator for the blog. |
-| `tools/layout.py` | Shared header, navigation, footer, brand name and notice banner for generated pages. |
+| `tools/layout.py` | Shared header, navigation, footer, brand name and optional notice bar (`NOTE`) for generated pages. |
 | `tools/test_quiz.js` | Tests for the calculation (hand-calculated cases). |
 | `tools/check_links.py` | Checks every internal link and anchor. |
 

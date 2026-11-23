@@ -268,7 +268,7 @@ CTA = f"""<aside class="closing">
   <a class="btn primary" href="../index.html#quiz">{CTA_LABEL}</a>
 </aside>
 """
-BLOG_NOTE_EXTRA = " De artikels zijn testinhoud en niet door een specialist nagelezen."
+BLOG_NOTE_EXTRA = "De artikels zijn testinhoud en niet door een specialist nagelezen."
 
 
 def minutes(body: str) -> int:
@@ -277,7 +277,7 @@ def minutes(body: str) -> int:
 
 def build() -> None:
     from layout import NOTE
-    note = NOTE + BLOG_NOTE_EXTRA
+    note = (NOTE + " " + BLOG_NOTE_EXTRA).strip()
     OUT.mkdir(exist_ok=True)
     items = []
     for a in ARTICLES:
